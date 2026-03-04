@@ -1,4 +1,4 @@
-# ⚽ World Cup 2026: AI Virtual Fan Swapper
+# ⚽ World Cup 2026: AI Virtual Experience
 
 ![Python](https://img.shields.io/badge/Python-3.9+-blue.svg)
 ![OpenCV](https://img.shields.io/badge/OpenCV-4.x-green.svg)
