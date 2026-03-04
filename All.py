@@ -183,7 +183,7 @@ def main():
                 traje_id = trajes_activos.get(i)
                 if traje_id:
                     angulo = math.degrees(math.atan2(px_h_izq[1] - px_h_der[1], px_h_izq[0] - px_h_der[0]))
-                    ancho_t = dist_hombros * 1.8
+                    ancho_t = dist_hombros * 1.7
                     
                     key = f"traje_{i}"
                     if key not in suavizado_traje:
