@@ -5,3 +5,4 @@
 /faceSwap.py
 /main.py
 /pose_landmarker_heavy.task
+.gitignore
