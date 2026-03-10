@@ -31,6 +31,26 @@ INFO_EQUIPACIONES = {
     5: "Inglaterra", 6: "Francia", 7: "Italia", 8: "USA",
     9: "Alemania", 10: "Colombia"
 }
+
+COLORES_EQUIPACIONES = {
+    1: (180, 200, 230),   # Argentina - Light Blue (BGR)
+    2: (0, 100, 20),      # Portugal - Dark Green
+    3: (0, 130, 46),      # Mexico - Green
+    4: (40, 40, 180),     # España - Red
+    5: (240, 240, 240),   # Inglaterra - White
+    6: (180, 100, 20),    # Francia - Blue
+    7: (60, 140, 20),     # Italia - Green
+    8: (150, 70, 20),     # USA - Blue
+    9: (20, 20, 20),      # Alemania - Black
+    10: (30, 200, 250),   # Colombia - Yellow
+}
+
+def obtener_color_texto(color_fondo):
+    """Determina color de texto basado en luminancia del fondo"""
+    r, g, b = color_fondo[2], color_fondo[1], color_fondo[0]
+    luminancia = 0.299 * r + 0.587 * g + 0.114 * b
+    return (0, 0, 0) if luminancia > 140 else (255, 255, 255)
+
 TRAJES_DISPONIBLES = {
     1: cv2.imread('Body/argentina.png', cv2.IMREAD_UNCHANGED),
     2: cv2.imread('Body/portugal.png', cv2.IMREAD_UNCHANGED),
@@ -102,12 +122,21 @@ def dibujar_hud_persona(frame, nariz_pos, hombros_dist, traje_id, persona_id):
     suavizado_hud[key]['x'] = int(suavizado_hud[key]['x'] * 0.7 + target_x * 0.3)
     
     x, y = suavizado_hud[key]['x'], suavizado_hud[key]['y']
-    font = cv2.FONT_HERSHEY_DUPLEX
-    (w_t, h_t), _ = cv2.getTextSize(texto, font, 0.7, 2)
     
-    cv2.rectangle(frame, (x - w_t//2 - 15, y - h_t - 20), (x + w_t//2 + 15, y + 10), (0, 0, 180), -1)
-    cv2.rectangle(frame, (x - w_t//2 - 15, y - h_t - 20), (x + w_t//2 + 15, y + 10), (255, 255, 255), 2)
-    cv2.putText(frame, texto, (x - w_t//2, y - 5), font, 0.7, (255, 255, 255), 2)
+    color_equipo = COLORES_EQUIPACIONES.get(traje_id, (0, 0, 180))
+    color_texto = obtener_color_texto(color_equipo)
+    
+    font = cv2.FONT_HERSHEY_DUPLEX
+    escala = 0.7
+    grosor = 2
+    (w_t, h_t), _ = cv2.getTextSize(texto, font, escala, grosor)
+    
+    padding_x, padding_y = 12, 10
+    cv2.rectangle(frame, (x - w_t//2 - padding_x, y - h_t - padding_y), 
+                  (x + w_t//2 + padding_x, y + 8), color_equipo, -1)
+    cv2.rectangle(frame, (x - w_t//2 - padding_x, y - h_t - padding_y), 
+                  (x + w_t//2 + padding_x, y + 8), color_texto, 2)
+    cv2.putText(frame, texto, (x - w_t//2, y - 2), font, escala, color_texto, grosor)
 
 def rotar_imagen(imagen, angulo):
     h, w = imagen.shape[:2]
@@ -269,42 +298,43 @@ def main():
         cv2.putText(frame, "WORLD CUP 2026", (30, 45), 2, 1.0, (255, 255, 255), 2)
         cv2.putText(frame, "VIRTUAL TRY-ON", (30, 70), 1, 0.7, (0, 200, 255), 2)
         
-        # Panel derecho: Grid 2x5 organizado
-        panel_x = w_f - 280
-        panel_w = 265
-        panel_h = 180
+        # Panel derecho: Grid 2x5 organizado - AMPLIADO
+        panel_x = w_f - 420
+        panel_w = 405
+        panel_h = 320
         cv2.rectangle(frame, (panel_x, 15), (panel_x + panel_w, panel_h + 15), (20, 20, 40), -1)
-        cv2.rectangle(frame, (panel_x, 15), (panel_x + panel_w, panel_h + 15), (255, 255, 255), 2)
-        cv2.putText(frame, "DEDOS = EQUIPO", (panel_x + 15, 40), 1, 0.7, (200, 200, 200), 1)
+        cv2.rectangle(frame, (panel_x, 15), (panel_x + panel_w, panel_h + 15), (255, 255, 255), 3)
+        cv2.putText(frame, "DEDOS = EQUIPO", (panel_x + 20, 50), 1, 1.0, (220, 220, 220), 2)
         
         equipos_grid = [
-            (1, "Argentina", (100, 150, 255)),
-            (2, "Portugal", (0, 200, 100)),
-            (3, "Mexico", (255, 100, 100)),
-            (4, "España", (255, 255, 100)),
-            (5, "Inglaterra", (100, 255, 150)),
-            (6, "Francia", (150, 255, 100)),
-            (7, "Italia", (255, 150, 100)),
-            (8, "USA", (100, 255, 255)),
-            (9, "Alemania", (255, 100, 255)),
-            (10, "Colombia", (255, 255, 150)),
+            (1, "Argentina", COLORES_EQUIPACIONES[1]),
+            (2, "Portugal", COLORES_EQUIPACIONES[2]),
+            (3, "Mexico", COLORES_EQUIPACIONES[3]),
+            (4, "España", COLORES_EQUIPACIONES[4]),
+            (5, "Inglaterra", COLORES_EQUIPACIONES[5]),
+            (6, "Francia", COLORES_EQUIPACIONES[6]),
+            (7, "Italia", COLORES_EQUIPACIONES[7]),
+            (8, "USA", COLORES_EQUIPACIONES[8]),
+            (9, "Alemania", COLORES_EQUIPACIONES[9]),
+            (10, "Colombia", COLORES_EQUIPACIONES[10]),
         ]
         
         col_width = panel_w // 2
-        row_height = 28
+        row_height = 55
         for idx, (num, nombre, color) in enumerate(equipos_grid):
             col = idx % 2
             row = idx // 2
-            x_pos = panel_x + 15 + col * col_width
-            y_pos = 60 + row * row_height
-            cv2.rectangle(frame, (x_pos, y_pos - 18), (x_pos + col_width - 20, y_pos + 2), color, -1)
-            cv2.rectangle(frame, (x_pos, y_pos - 18), (x_pos + col_width - 20, y_pos + 2), (255, 255, 255), 1)
-            cv2.putText(frame, f"{num}", (x_pos + 5, y_pos), 2, 0.6, (0, 0, 0), 2)
-            cv2.putText(frame, nombre, (x_pos + 25, y_pos), 1, 0.5, (255, 255, 255), 1)
+            x_pos = panel_x + 20 + col * col_width
+            y_pos = 75 + row * row_height
+            color_texto = obtener_color_texto(color)
+            cv2.rectangle(frame, (x_pos, y_pos - 30), (x_pos + col_width - 30, y_pos + 5), color, -1)
+            cv2.rectangle(frame, (x_pos, y_pos - 30), (x_pos + col_width - 30, y_pos + 5), color_texto, 3)
+            cv2.putText(frame, f"{num}", (x_pos + 10, y_pos), 2, 1.2, (0, 0, 0) if color_texto == (255,255,255) else (255,255,255), 3)
+            cv2.putText(frame, nombre, (x_pos + 45, y_pos), 1, 0.9, color_texto, 2)
         
-        # Barra inferior con indicador visual
-        cv2.rectangle(frame, (0, h_f - 60), (w_f, h_f), (20, 20, 40), -1)
-        cv2.line(frame, (0, h_f - 60), (w_f, h_f - 60), (0, 200, 255), 3)
+        # Barra inferior con indicador visual - AMPLIADA
+        cv2.rectangle(frame, (0, h_f - 90), (w_f, h_f), (20, 20, 40), -1)
+        cv2.line(frame, (0, h_f - 90), (w_f, h_f - 90), (0, 200, 255), 4)
         
         # Indicador de dedos activos (mostrar dedos individuales y suma total)
         dedos_individual = []
@@ -314,13 +344,13 @@ def main():
             dedos_individual.append(dedos_der)
         
         for d in range(1, 11):
-            x_dedo = 30 + (d - 1) * ((w_f - 60) // 10)
-            # Resaltar si es el número de dedos individual O la suma total
+            x_dedo = 50 + (d - 1) * ((w_f - 100) // 10)
             es_seleccionado = (d == total_dedos) or (d in dedos_individual)
-            color_dedo = (0, 255, 0) if es_seleccionado else (80, 80, 80)
-            cv2.circle(frame, (x_dedo, h_f - 30), 15, color_dedo, -1)
-            cv2.circle(frame, (x_dedo, h_f - 30), 15, (255, 255, 255), 2)
-            cv2.putText(frame, str(d), (x_dedo - 5, h_f - 25), 1, 0.6, (0, 0, 0), 2)
+            color_dedo = COLORES_EQUIPACIONES[d] if es_seleccionado else (50, 50, 50)
+            cv2.circle(frame, (x_dedo, h_f - 45), 25, color_dedo, -1)
+            cv2.circle(frame, (x_dedo, h_f - 45), 25, (255, 255, 255), 3)
+            color_txt = obtener_color_texto(color_dedo)
+            cv2.putText(frame, str(d), (x_dedo - 8, h_f - 38), 2, 1.0, color_txt, 3)
         
         cv2.imshow('AI Swapper - WORLD CUP 2026 EDITION', frame)
         t_start = time.time()
